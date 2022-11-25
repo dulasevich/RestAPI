@@ -25,32 +25,30 @@ public class ZipCodesTests {
     void getZipCodesTest() {
         ResponseEntity<List<String>> response =  zipCodeClient.getZipCodes();
         Assertions.assertEquals(RESPONSE_CODE, response.getStatusCode());
-        Assertions.assertTrue(response.getEntity().containsAll(EXPECTED_CODES));
+        Assertions.assertTrue(response.getBody().containsAll(EXPECTED_CODES));
     }
 
     @Test
     void postZipCodeTest() {
         ResponseEntity<List<String>> response = zipCodeClient.postZipCodes(NEW_ZIP_CODE);
         Assertions.assertEquals(RESPONSE_CODE, response.getStatusCode());
-        Assertions.assertTrue(response.getEntity().contains(NEW_ZIP_CODE));
+        Assertions.assertTrue(response.getBody().contains(NEW_ZIP_CODE));
     }
 
-//    @Test
-//    void postDuplicatedZipCodesTest() {
-//        int currentZipCodesQuantity = zipCodeClient.getZipCodes().getBody().size();
-//        zipCodeClient.postNewZipCode("[\"" + NEW_ZIP_CODE + "\", \"" + NEW_ZIP_CODE + "\"]");
-//        ResponseEntity<List<String>> response = zipCodeClient.getZipCodes();
-//        Assertions.assertEquals(RESPONSE_CODE, response.getStatusCode());
-//        Assertions.assertTrue(response.getBody().contains(NEW_ZIP_CODE));
-//        Assertions.assertEquals(currentZipCodesQuantity+1, zipCodeClient.getZipCodes().getBody().size());
-//    }
-//
-//    @Test
-//    void postExistingZipCodeTest() {
-//        int currentZipCodesQuantity = zipCodeClient.getZipCodes().getBody().size();
-//        zipCodeClient.postNewZipCode("[\"" + EXPECTED_CODES.get(0)+ "\", \"" + NEW_ZIP_CODE + "\"]");
-//        ResponseEntity<List<String>> response = zipCodeClient.getZipCodes();
-//        Assertions.assertEquals(RESPONSE_CODE, response.getStatusCode());
-//        Assertions.assertEquals(currentZipCodesQuantity+1, zipCodeClient.getZipCodes().getBody().size());
-//    }
+    @Test
+    void postDuplicatedZipCodesTest() {
+        int currentZipCodesQuantity = zipCodeClient.getZipCodes().getBody().size();
+        ResponseEntity<List<String>> response = zipCodeClient.postZipCodes(NEW_ZIP_CODE, NEW_ZIP_CODE);
+        Assertions.assertEquals(RESPONSE_CODE, response.getStatusCode());
+        Assertions.assertTrue(response.getBody().contains(NEW_ZIP_CODE));
+        Assertions.assertEquals(currentZipCodesQuantity+1, zipCodeClient.getZipCodes().getBody().size());
+    }
+
+    @Test
+    void postExistingZipCodeTest() {
+        int currentZipCodesQuantity = zipCodeClient.getZipCodes().getBody().size();
+        ResponseEntity<List<String>> response = zipCodeClient.postZipCodes(EXPECTED_CODES.get(0), NEW_ZIP_CODE);
+        Assertions.assertEquals(RESPONSE_CODE, response.getStatusCode());
+        Assertions.assertEquals(currentZipCodesQuantity+1, zipCodeClient.getZipCodes().getBody().size());
+    }
 }

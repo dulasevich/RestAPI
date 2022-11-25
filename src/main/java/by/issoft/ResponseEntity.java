@@ -6,5 +6,5 @@ import lombok.Data;
 public class ResponseEntity<T> {
 
     private int statusCode;
-    private T entity;
+    private T body;
 }
