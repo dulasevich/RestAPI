@@ -6,6 +6,7 @@ import org.apache.http.HttpResponse;
 
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.LinkedList;
 import java.util.List;
 
 public class ZipCodeClient {
@@ -35,16 +36,13 @@ public class ZipCodeClient {
     public ResponseEntity<List<String>> postZipCodes(String... zipcodes) {
         List<String> zipCodes;
         ResponseEntity<List<String>> response = new ResponseEntity<>();
-        for (int i=0; i< zipcodes.length; i++) {
-            HttpResponse httpResponse = Client.doPost(POST_ZIPCODES_EXPAND_ENDPOINT,
-                    "[\"" + Arrays.stream(zipcodes).toList().get(i) + "\"]");
-            response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
-            try {
-                zipCodes = Arrays.stream(objectMapper.readValue(httpResponse.getEntity().getContent(), String[].class)).toList();
-                response.setBody(zipCodes);
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
+        HttpResponse httpResponse = Client.doPost(POST_ZIPCODES_EXPAND_ENDPOINT, Arrays.toString(zipcodes));
+        response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
+        try {
+            zipCodes = Arrays.stream(objectMapper.readValue(httpResponse.getEntity().getContent(), String[].class)).toList();
+            response.setBody(zipCodes);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
         return response;
     }

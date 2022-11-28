@@ -19,7 +19,7 @@ public class Request {
     private final HttpRequest request;
     private static final CloseableHttpClient httpClient = HttpClients.createDefault();
 
-    private Request(String url, by.issoft.httpClient.HttpMethods method) {
+    private Request(String url, HttpMethod method) {
         switch (method) {
             case GET -> request = new HttpGet(url);
             case PUT -> request = new HttpPut(url);
@@ -30,19 +30,19 @@ public class Request {
     }
 
     public static Request get(String url) {
-        return new Request(url, HttpMethods.GET);
+        return new Request(url, HttpMethod.GET);
     }
 
     public static Request put(String url) {
-        return new Request(url, HttpMethods.PUT);
+        return new Request(url, HttpMethod.PUT);
     }
 
     public static Request post(String url) {
-        return new Request(url, HttpMethods.POST);
+        return new Request(url, HttpMethod.POST);
     }
 
     public static Request delete(String url) {
-        return new Request(url, HttpMethods.DELETE);
+        return new Request(url, HttpMethod.DELETE);
     }
 
     public Request addParameter(String key, String value) {

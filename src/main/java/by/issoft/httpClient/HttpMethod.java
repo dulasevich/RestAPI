@@ -1,5 +1,5 @@
 package by.issoft.httpClient;
 
-public enum HttpMethods {
+public enum HttpMethod {
     GET, PUT, POST, DELETE
 }

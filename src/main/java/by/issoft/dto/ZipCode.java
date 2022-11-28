@@ -3,6 +3,6 @@ package by.issoft.dto;
 import lombok.Data;
 
 @Data
-public class ZipCodes {
+public class ZipCode {
     private String zipCode;
 }
