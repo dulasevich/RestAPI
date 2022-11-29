@@ -20,6 +20,7 @@ public class CreateUserTest {
     private String zipCode;
     private UserClient userClient;
     private ZipCodeClient zipCodeClient;
+    private List<String> zipCodes;
 
     @BeforeEach
     void initUser() {
@@ -27,8 +28,8 @@ public class CreateUserTest {
         zipCodeClient = new ZipCodeClient();
         age = RandomUtils.nextInt(0, 120);
         name = RandomStringUtils.randomAlphabetic(10);
-        List<String> zipcodes = zipCodeClient.getZipCodes().getBody();
-        zipCode = zipCodeClient.getFirstZipcode(zipcodes);
+        zipCodes = zipCodeClient.getZipCodes().getBody();
+        zipCode = zipCodeClient.getFirstZipcode(zipCodes);
         sex = userClient.getRandomSex();
     }
 
@@ -37,10 +38,10 @@ public class CreateUserTest {
         User user = new User(age, name, sex, zipCode);
         ResponseEntity<List<User>> response = userClient.postUser(user);
         List<User> users = userClient.getUsers().getBody();
-        List<String> zipcodes = zipCodeClient.getZipCodes().getBody();
+        zipCodes = zipCodeClient.getZipCodes().getBody();
         Assertions.assertEquals(POST_RESPONSE_CODE, response.getStatusCode());
         Assertions.assertTrue(users.contains(user));
-        Assertions.assertFalse(zipcodes.contains(zipCode));
+        Assertions.assertFalse(zipCodes.contains(zipCode));
     }
 
     @Test
