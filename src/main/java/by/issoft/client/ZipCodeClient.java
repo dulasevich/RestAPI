@@ -2,6 +2,7 @@ package by.issoft.client;
 
 import by.issoft.ResponseEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 
@@ -46,5 +47,15 @@ public class ZipCodeClient {
             e.printStackTrace();
         }
         return response;
+    }
+
+    public String getFirstZipcode(List<String> zipCodes) {
+        if(zipCodes.size() == 0) {
+            postZipCodes(RandomStringUtils.randomNumeric(5));
+            List<String> zips = getZipCodes().getBody();
+            return zips.get(0);
+        } else {
+            return zipCodes.get(0);
+        }
     }
 }

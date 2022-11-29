@@ -10,13 +10,13 @@ public class Client {
 
     public static HttpResponse doGet(String endpoint) {
         return Request.get(BASE_URL + endpoint)
-                .addBearerTokenAuth(AuthClient.setToken(AccessType.READ))
+                .addBearerTokenAuth(AuthClient.getToken(AccessType.READ))
                 .send();
     }
 
     public static HttpResponse doPost(String endpoint, String body) {
         return Request.post(BASE_URL + endpoint)
-                .addBearerTokenAuth(AuthClient.setToken(AccessType.WRITE))
+                .addBearerTokenAuth(AuthClient.getToken(AccessType.WRITE))
                 .addHeader("Content-Type", "application/json")
                 .addJsonBody(body)
                 .send();

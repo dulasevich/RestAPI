@@ -10,7 +10,7 @@ import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 
-public class ZipCodesTests {
+public class ZipCodeTest {
 
     private final static int RESPONSE_CODE = 201;
     private static final List<String> EXPECTED_CODES = List.of("ABCDE", "23456");
