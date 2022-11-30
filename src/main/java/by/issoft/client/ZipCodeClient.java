@@ -49,13 +49,13 @@ public class ZipCodeClient {
         return response;
     }
 
-    public String getFirstZipcode(List<String> zipCodes) {
-        if(zipCodes.size() == 0) {
-            postZipCodes(RandomStringUtils.randomNumeric(5));
-            List<String> zips = getZipCodes().getBody();
-            return zips.get(0);
+    public String createAvailableZipcode () {
+        String zipcode = RandomStringUtils.randomNumeric(5);
+        ResponseEntity<List<String>> response = postZipCodes(zipcode);
+        if(response.getStatusCode() == 201) {
+            return zipcode;
         } else {
-            return zipCodes.get(0);
+            throw new RuntimeException("Failed to create available zipcode. Check POST /zip-codes/expand method.");
         }
     }
 }

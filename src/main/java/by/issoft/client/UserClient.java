@@ -1,10 +1,9 @@
 package by.issoft.client;
 
 import by.issoft.ResponseEntity;
-import by.issoft.dto.Sex;
 import by.issoft.dto.User;
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.HttpResponse;
 
 import java.io.IOException;
@@ -34,45 +33,12 @@ public class UserClient {
         return response;
     }
 
-    public ResponseEntity<List<User>> postUser(User user) {
-        List<User> users;
-        ResponseEntity<List<User>> response = new ResponseEntity<>();
-        HttpResponse httpResponse = Client.doPost(USER_ENDPOINT, postBody(user));
-        response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
+    public int postUser(User user) {
         try {
-            users = Arrays.stream(objectMapper.readValue(httpResponse.getEntity().getContent(), User[].class)).toList();
-            response.setBody(users);
-        } catch (IOException e) {
-            e.printStackTrace();
+            HttpResponse httpResponse = Client.doPost(USER_ENDPOINT, objectMapper.writeValueAsString(user));
+            return httpResponse.getStatusLine().getStatusCode();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException();
         }
-        return response;
-    }
-
-    private String prepareBody(Integer age, String name, Sex sex, String zipcode) {
-        return "{" + "\n" +
-                "\"" + "age" + "\"" + ":" + age + ",\n" +
-                "\"" + "name" + "\"" + ":" + "\"" + name + "\"" + ",\n" +
-                "\"" + "sex" + "\"" + ":" + "\"" + sex.toString() + "\"" + ",\n" +
-                "\"" + "zipCode" + "\"" + ":" + "\"" + zipcode + "\"" + "\n" +
-                "}";
-    }
-
-    private String prepareAgeZipCodeNullBody(Integer age, String name, Sex sex, String zipcode) {
-        return "{" + "\n" +
-                "\"" + "name" + "\"" + ":" + "\"" + age + "\"" + ",\n" +
-                "\"" + "name" + "\"" + ":" + "\"" + name + "\"" + ",\n" +
-                "\"" + "sex" + "\"" + ":" + "\"" + sex.toString() + "\"" + ",\n" +
-                "\"" + "zipCode" + "\"" + ":" + zipcode + "\n" +
-                "}";
-    }
-
-    private String postBody(User user) {
-        return user.getAge() == null ? prepareAgeZipCodeNullBody(user.getAge(), user.getName(), user.getSex(), user.getZipCode()) :
-                prepareBody(user.getAge(), user.getName(), user.getSex(), user.getZipCode());
-    }
-
-    public Sex getRandomSex() {
-        final List<Sex> SexValues = List.of(Sex.values());
-        return SexValues.get(RandomUtils.nextInt(0, SexValues.size()-1));
     }
 }
