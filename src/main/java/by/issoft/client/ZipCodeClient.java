@@ -2,6 +2,7 @@ package by.issoft.client;
 
 import by.issoft.ResponseEntity;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.http.HttpResponse;
 
@@ -46,5 +47,15 @@ public class ZipCodeClient {
             e.printStackTrace();
         }
         return response;
+    }
+
+    public String createAvailableZipcode () {
+        String zipcode = RandomStringUtils.randomNumeric(5);
+        ResponseEntity<List<String>> response = postZipCodes(zipcode);
+        if(response.getStatusCode() == 201) {
+            return zipcode;
+        } else {
+            throw new RuntimeException("Failed to create available zipcode. Check POST /zip-codes/expand method.");
+        }
     }
 }
