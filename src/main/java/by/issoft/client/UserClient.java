@@ -1,6 +1,7 @@
 package by.issoft.client;
 
 import by.issoft.ResponseEntity;
+import by.issoft.dto.Sex;
 import by.issoft.dto.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,5 +41,26 @@ public class UserClient {
         } catch (JsonProcessingException e) {
             throw new RuntimeException();
         }
+    }
+
+    public void prepareExpectedUser() {
+        User user = new User(31, "Dmitry", Sex.MALE, "12345");
+        List<User> users = getUsers().getBody();
+        if (!(users.contains(user))) {
+            postUser(user);
+        }
+    }
+
+    public List<User> getOlderThanUsers(Integer age) {
+        return getUsers().getBody().stream().filter(user -> user.getAge() != null && user.getAge() > age).toList();
+    }
+
+    public List<User> getYoungerThanUsers(Integer age) {
+        return getUsers().getBody().stream().filter(user -> user.getAge() != null && user.getAge() < age).toList();
+    }
+
+    public List<User> getUsersBySex(Sex sex) {
+        return sex == Sex.FEMALE ? getUsers().getBody().stream().filter(user -> user.getSex().equals(Sex.FEMALE)).toList() :
+                getUsers().getBody().stream().filter(user -> user.getSex().equals(Sex.MALE)).toList();
     }
 }
