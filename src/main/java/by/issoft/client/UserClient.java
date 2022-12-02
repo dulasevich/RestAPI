@@ -1,6 +1,7 @@
 package by.issoft.client;
 
 import by.issoft.ResponseEntity;
+import by.issoft.dto.Sex;
 import by.issoft.dto.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -40,5 +41,19 @@ public class UserClient {
         } catch (JsonProcessingException e) {
             throw new RuntimeException();
         }
+    }
+
+    public ResponseEntity<List<User>> getUsers(String parameter, String value) {
+        List<User> users;
+        ResponseEntity<List<User>> response = new ResponseEntity<>();
+        HttpResponse httpResponse = Client.doGet(USER_ENDPOINT, parameter, value);
+        response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
+        try {
+            users = Arrays.stream(objectMapper.readValue(httpResponse.getEntity().getContent(), User[].class)).toList();
+            response.setBody(users);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+        return response;
     }
 }
