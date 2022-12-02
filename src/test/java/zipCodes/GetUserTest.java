@@ -22,9 +22,9 @@ public class GetUserTest {
 
     @Test
     void getUserTest() {
-        List<User> users = userClient.getUsers().getBody();
-        Assertions.assertEquals(RESPONSE_CODE, userClient.getUsers().getStatusCode());
-        Assertions.assertNotNull(users);
+        ResponseEntity<List<User>> users = userClient.getUsers();
+        Assertions.assertEquals(RESPONSE_CODE, users.getStatusCode());
+        Assertions.assertNotNull(users.getBody());
     }
 
     @Test
