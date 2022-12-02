@@ -43,24 +43,17 @@ public class UserClient {
         }
     }
 
-    public void prepareExpectedUser() {
-        User user = new User(31, "Dmitry", Sex.MALE, "12345");
-        List<User> users = getUsers().getBody();
-        if (!(users.contains(user))) {
-            postUser(user);
+    public ResponseEntity<List<User>> getUsers(String parameter, String value) {
+        List<User> users;
+        ResponseEntity<List<User>> response = new ResponseEntity<>();
+        HttpResponse httpResponse = Client.doGet(USER_ENDPOINT, parameter, value);
+        response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
+        try {
+            users = Arrays.stream(objectMapper.readValue(httpResponse.getEntity().getContent(), User[].class)).toList();
+            response.setBody(users);
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-    }
-
-    public List<User> getOlderThanUsers(Integer age) {
-        return getUsers().getBody().stream().filter(user -> user.getAge() != null && user.getAge() > age).toList();
-    }
-
-    public List<User> getYoungerThanUsers(Integer age) {
-        return getUsers().getBody().stream().filter(user -> user.getAge() != null && user.getAge() < age).toList();
-    }
-
-    public List<User> getUsersBySex(Sex sex) {
-        return sex == Sex.FEMALE ? getUsers().getBody().stream().filter(user -> user.getSex().equals(Sex.FEMALE)).toList() :
-                getUsers().getBody().stream().filter(user -> user.getSex().equals(Sex.MALE)).toList();
+        return response;
     }
 }
