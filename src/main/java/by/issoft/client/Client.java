@@ -1,6 +1,7 @@
 package by.issoft.client;
 
 import by.issoft.httpClient.AccessType;
+import by.issoft.httpClient.HttpMethod;
 import by.issoft.httpClient.Request;
 import org.apache.http.HttpResponse;
 
@@ -25,7 +26,15 @@ public class Client {
         return Request.post(BASE_URL + endpoint)
                 .addBearerTokenAuth(AuthClient.getToken(AccessType.WRITE))
                 .addHeader("Content-Type", "application/json")
-                .addJsonBody(body)
+                .addJsonBody(body, HttpMethod.POST)
+                .send();
+    }
+
+    public static HttpResponse doPut(String endpoint, String body) {
+        return Request.put(BASE_URL + endpoint)
+                .addBearerTokenAuth(AuthClient.getToken(AccessType.WRITE))
+                .addHeader("Content-Type", "application/json")
+                .addJsonBody(body, HttpMethod.PUT)
                 .send();
     }
 }

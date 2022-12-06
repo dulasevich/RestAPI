@@ -5,6 +5,8 @@ import by.issoft.dto.Sex;
 import by.issoft.dto.User;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.commons.lang3.RandomStringUtils;
+import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.HttpResponse;
 
 import java.io.IOException;
@@ -55,5 +57,28 @@ public class UserClient {
             e.printStackTrace();
         }
         return response;
+    }
+
+    public int updateUser(User newUser, User user) {
+        try {
+            HttpResponse httpResponse = Client.doPut(USER_ENDPOINT, "{\"userNewValues\": " + objectMapper.writeValueAsString(newUser)
+                    + "," + "\"userToChange\": " + objectMapper.writeValueAsString(user) + "}");
+            return httpResponse.getStatusLine().getStatusCode();
+        } catch (JsonProcessingException e) {
+            throw new RuntimeException();
+        }
+    }
+
+    public Sex setOppositeSex(Sex sex) {
+        return sex == Sex.FEMALE ? Sex.MALE : Sex.FEMALE;
+    }
+
+    public User createAvailableUser (User user) {
+        int code = postUser(user);
+        if(code == 201) {
+            return user;
+        } else {
+            throw new RuntimeException("Failed to create available zipcode. Check POST /zip-codes/expand method.");
+        }
     }
 }

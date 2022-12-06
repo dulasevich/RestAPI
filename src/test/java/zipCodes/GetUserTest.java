@@ -29,16 +29,16 @@ public class GetUserTest {
 
     @Test
     void getOlderUsersTest() {
-        Integer ageToCheck = 40;
-        ResponseEntity<List<User>> users = userClient.getUsers("olderThan", ageToCheck.toString());
+        int ageToCheck = 40;
+        ResponseEntity<List<User>> users = userClient.getUsers("olderThan", String.valueOf(ageToCheck));
         Assertions.assertEquals(RESPONSE_CODE, users.getStatusCode());
-        users.getBody().forEach(user -> Assertions.assertTrue(user.getAge() > ageToCheck));
+        Assertions.assertTrue(users.getBody().stream().allMatch(user -> user.getAge() > ageToCheck));
     }
 
     @Test
     void getYoungerUsersTest() {
-        Integer ageToCheck = 20;
-        ResponseEntity<List<User>> users = userClient.getUsers("youngerThan", ageToCheck.toString());
+        int ageToCheck = 20;
+        ResponseEntity<List<User>> users = userClient.getUsers("youngerThan", String.valueOf(ageToCheck));
         Assertions.assertEquals(RESPONSE_CODE, users.getStatusCode());
         users.getBody().forEach(user -> Assertions.assertTrue(user.getAge() < ageToCheck));
     }
