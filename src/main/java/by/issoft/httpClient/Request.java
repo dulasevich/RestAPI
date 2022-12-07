@@ -70,18 +70,14 @@ public class Request {
         return this;
     }
 
-    public Request addJsonBody(String body, HttpMethod method) {
+    public Request addJsonBody(String body) {
         StringEntity entity = null;
         try {
             entity = new StringEntity(body);
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        switch (method) {
-            case POST -> ((HttpPost) request).setEntity(entity);
-            case PUT -> ((HttpPut) request).setEntity(entity);
-            default -> throw new RuntimeException("incorrect HTTP method");
-        }
+        ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
         return this;
     }
 

@@ -3,11 +3,11 @@ package by.issoft.client;
 import by.issoft.ResponseEntity;
 import by.issoft.dto.Sex;
 import by.issoft.dto.User;
+import by.issoft.dto.UserPairToUpdate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.commons.lang3.RandomStringUtils;
-import org.apache.commons.lang3.RandomUtils;
 import org.apache.http.HttpResponse;
+import org.apache.http.message.BasicNameValuePair;
 
 import java.io.IOException;
 import java.util.Arrays;
@@ -45,10 +45,10 @@ public class UserClient {
         }
     }
 
-    public ResponseEntity<List<User>> getUsers(String parameter, String value) {
+    public ResponseEntity<List<User>> getUsers(List<BasicNameValuePair> params) {
         List<User> users;
         ResponseEntity<List<User>> response = new ResponseEntity<>();
-        HttpResponse httpResponse = Client.doGet(USER_ENDPOINT, parameter, value);
+        HttpResponse httpResponse = Client.doGet(USER_ENDPOINT, params);
         response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
         try {
             users = Arrays.stream(objectMapper.readValue(httpResponse.getEntity().getContent(), User[].class)).toList();
@@ -59,10 +59,9 @@ public class UserClient {
         return response;
     }
 
-    public int updateUser(User newUser, User user) {
+    public int updateUser(UserPairToUpdate userPairToUpdate) {
         try {
-            HttpResponse httpResponse = Client.doPut(USER_ENDPOINT, "{\"userNewValues\": " + objectMapper.writeValueAsString(newUser)
-                    + "," + "\"userToChange\": " + objectMapper.writeValueAsString(user) + "}");
+            HttpResponse httpResponse = Client.doPut(USER_ENDPOINT, objectMapper.writeValueAsString(userPairToUpdate));
             return httpResponse.getStatusLine().getStatusCode();
         } catch (JsonProcessingException e) {
             throw new RuntimeException();
@@ -74,11 +73,11 @@ public class UserClient {
     }
 
     public User createAvailableUser (User user) {
-        int code = postUser(user);
-        if(code == 201) {
+        int statusCode = postUser(user);
+        if(statusCode == 201) {
             return user;
         } else {
-            throw new RuntimeException("Failed to create available zipcode. Check POST /zip-codes/expand method.");
+            throw new RuntimeException("Failed to create available user. Check POST /users method.");
         }
     }
 }
