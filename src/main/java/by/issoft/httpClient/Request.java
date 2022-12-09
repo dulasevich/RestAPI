@@ -77,7 +77,7 @@ public class Request {
         } catch (UnsupportedEncodingException e) {
             e.printStackTrace();
         }
-        ((HttpPost) request).setEntity(entity);
+        ((HttpEntityEnclosingRequestBase) request).setEntity(entity);
         return this;
     }
 
