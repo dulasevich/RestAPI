@@ -1,8 +1,10 @@
 package by.issoft.httpClient;
 
+import by.issoft.dto.HttpDeleteWithBody;
 import org.apache.commons.codec.binary.Base64;
 import org.apache.http.HttpRequest;
 import org.apache.http.HttpResponse;
+import org.apache.http.client.config.RequestConfig;
 import org.apache.http.client.methods.*;
 import org.apache.http.client.utils.URIBuilder;
 import org.apache.http.entity.StringEntity;
@@ -20,11 +22,20 @@ public class Request {
     private static final CloseableHttpClient httpClient = HttpClients.createDefault();
 
     private Request(String url, HttpMethod method) {
+        RequestConfig requestConfig = RequestConfig.custom()
+                .setConnectTimeout(10000)
+                .setConnectionRequestTimeout(10000)
+                .setSocketTimeout(10000)
+                .build();
+
         switch (method) {
-            case GET -> request = new HttpGet(url);
+            case GET -> {
+                request = new HttpGet(url);
+                ((HttpRequestBase) request).setConfig(requestConfig);
+            }
             case PUT -> request = new HttpPut(url);
             case POST -> request = new HttpPost(url);
-            case DELETE -> request = new HttpDelete(url);
+            case DELETE -> request = new HttpDeleteWithBody(url);
             default -> throw new RuntimeException("Unknown request method");
         }
     }
