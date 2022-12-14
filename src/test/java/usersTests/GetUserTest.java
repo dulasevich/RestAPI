@@ -1,4 +1,4 @@
-package zipCodes;
+package usersTests;
 
 import by.issoft.ResponseEntity;
 import by.issoft.client.UserClient;
