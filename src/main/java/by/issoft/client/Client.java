@@ -5,6 +5,7 @@ import by.issoft.httpClient.Request;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicNameValuePair;
 
+import java.io.File;
 import java.util.List;
 
 public class Client {
@@ -44,6 +45,13 @@ public class Client {
                 .addBearerTokenAuth(AuthClient.getToken(AccessType.WRITE))
                 .addHeader("Content-Type", "application/json")
                 .addJsonBody(body)
+                .send();
+    }
+
+    public static HttpResponse doPost(String endpoint, File file, String fileName){
+        return Request.post(BASE_URL + endpoint)
+                .addBearerTokenAuth(AuthClient.getToken(AccessType.WRITE))
+                .attachFileToBody(file, fileName)
                 .send();
     }
 }
