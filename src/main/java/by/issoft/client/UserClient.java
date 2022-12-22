@@ -11,7 +11,6 @@ import org.apache.http.message.BasicNameValuePair;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -94,16 +93,14 @@ public class UserClient {
     }
 
     public HttpResponse uploadUser(File file, String fileName) {
-        return Client.doPostFile(USER_UPLOAD_ENDPOINT, file, fileName);
+        return Client.doPost(USER_UPLOAD_ENDPOINT, file, fileName);
     }
 
     public List<User> getUsersFromFile(File file) {
-        List<User> users = new ArrayList<>();
         try {
-            users = (Arrays.stream(objectMapper.readValue(file, User[].class)).toList());
+            return (Arrays.stream(objectMapper.readValue(file, User[].class)).toList());
         } catch (IOException e) {
-            e.printStackTrace();
+            throw new RuntimeException("unable to load users");
         }
-        return users;
     }
 }

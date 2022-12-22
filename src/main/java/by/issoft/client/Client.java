@@ -48,7 +48,7 @@ public class Client {
                 .send();
     }
 
-    public static HttpResponse doPostFile(String endpoint, File file, String fileName){
+    public static HttpResponse doPost(String endpoint, File file, String fileName){
         return Request.post(BASE_URL + endpoint)
                 .addBearerTokenAuth(AuthClient.getToken(AccessType.WRITE))
                 .attachFileToBody(file, fileName)
