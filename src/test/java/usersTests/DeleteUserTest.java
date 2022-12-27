@@ -4,11 +4,14 @@ import by.issoft.client.UserClient;
 import by.issoft.client.ZipCodeClient;
 import by.issoft.dto.Sex;
 import by.issoft.dto.User;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
+import org.slf4j.LoggerFactory;
 
 import java.util.List;
 
@@ -19,6 +22,7 @@ public class DeleteUserTest {
     private UserClient userClient;
     private ZipCodeClient zipCodeClient;
     private User userToDelete;
+    private final Logger logger = (Logger) LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
     @BeforeEach
     void initUserClient() {
@@ -28,6 +32,7 @@ public class DeleteUserTest {
                 RandomStringUtils.randomAlphabetic(10),
                 Sex.FEMALE,
                 zipCodeClient.getZipCodes().getBody().get(0)));
+        logger.setLevel(Level.DEBUG);
     }
 
     @Test

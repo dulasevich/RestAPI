@@ -2,7 +2,10 @@ package usersTests;
 
 import by.issoft.client.UserClient;
 import by.issoft.dto.User;
+import ch.qos.logback.classic.Level;
+import ch.qos.logback.classic.Logger;
 import org.junit.jupiter.api.*;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.util.List;
@@ -14,12 +17,14 @@ public class UploadUserTest {
     private final static int SUCCESS_RESPONSE_CODE = 201;
     private final static int NO_SUCH_ZIPCODE_RESPONSE_CODE = 424;
     private final static int REQUIRED_FIELD_MISSED_RESPONSE_CODE = 409;
+    private final Logger logger = (Logger)LoggerFactory.getLogger(Logger.ROOT_LOGGER_NAME);
 
     private UserClient userClient;
 
     @BeforeEach
     void initUserClient() {
         userClient = new UserClient();
+        logger.setLevel(Level.DEBUG);
     }
 
     @Test

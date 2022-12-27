@@ -6,6 +6,8 @@ import by.issoft.dto.User;
 import by.issoft.dto.UserPairToUpdate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import io.qameta.allure.Allure;
+import io.qameta.allure.Step;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicNameValuePair;
 
@@ -24,6 +26,7 @@ public class UserClient {
         this.objectMapper = new ObjectMapper();
     }
 
+    @Step("Get all users")
     public ResponseEntity<List<User>> getUsers() {
         List<User> users;
         ResponseEntity<List<User>> response = new ResponseEntity<>();
@@ -38,15 +41,19 @@ public class UserClient {
         return response;
     }
 
+    @Step("Create user\n [{user}]")
     public int postUser(User user) {
         try {
-            HttpResponse httpResponse = Client.doPost(USER_ENDPOINT, objectMapper.writeValueAsString(user));
+            String body = objectMapper.writeValueAsString(user);
+            HttpResponse httpResponse = Client.doPost(USER_ENDPOINT, body);
+            addPayload(body);
             return httpResponse.getStatusLine().getStatusCode();
         } catch (JsonProcessingException e) {
             throw new RuntimeException();
         }
     }
 
+    @Step("Get users by parameter(s)")
     public ResponseEntity<List<User>> getUsers(List<BasicNameValuePair> params) {
         List<User> users;
         ResponseEntity<List<User>> response = new ResponseEntity<>();
@@ -61,9 +68,12 @@ public class UserClient {
         return response;
     }
 
+    @Step("Update user")
     public int updateUser(UserPairToUpdate userPairToUpdate) {
         try {
-            HttpResponse httpResponse = Client.doPut(USER_ENDPOINT, objectMapper.writeValueAsString(userPairToUpdate));
+            String body = objectMapper.writeValueAsString(userPairToUpdate);
+            HttpResponse httpResponse = Client.doPut(USER_ENDPOINT, body);
+            addPayload(body);
             return httpResponse.getStatusLine().getStatusCode();
         } catch (JsonProcessingException e) {
             throw new RuntimeException();
@@ -74,24 +84,35 @@ public class UserClient {
         return sex == Sex.FEMALE ? Sex.MALE : Sex.FEMALE;
     }
 
+    @Step("Create user for testing")
     public User createAvailableUser (User user) {
-        int statusCode = postUser(user);
+        int statusCode = 0;
+        try {
+            statusCode = Client.doPost(USER_ENDPOINT, objectMapper.writeValueAsString(user)).getStatusLine().getStatusCode();
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
         if(statusCode == 201) {
             return user;
         } else {
-            throw new RuntimeException("Failed to create available user. Check POST /users method.");
+            Client.logger.debug("Failed to create available user. Check POST /users method.");
+            throw new RuntimeException();
         }
     }
 
+    @Step("Delete user")
     public int deleteUser(User user) {
         try {
-            HttpResponse httpResponse = Client.doDelete(USER_ENDPOINT, objectMapper.writeValueAsString(user));
+            String body = objectMapper.writeValueAsString(user);
+            HttpResponse httpResponse = Client.doDelete(USER_ENDPOINT, body);
+            addPayload(body);
             return httpResponse.getStatusLine().getStatusCode();
         } catch (JsonProcessingException e) {
             throw new RuntimeException();
         }
     }
 
+    @Step("Upload user")
     public HttpResponse uploadUser(File file, String fileName) {
         return Client.doPost(USER_UPLOAD_ENDPOINT, file, fileName);
     }
@@ -100,7 +121,12 @@ public class UserClient {
         try {
             return (Arrays.stream(objectMapper.readValue(file, User[].class)).toList());
         } catch (IOException e) {
-            throw new RuntimeException("unable to load users");
+            Client.logger.debug("unable to load users");
+            throw new RuntimeException();
         }
+    }
+
+    public void addPayload(String body) {
+        Allure.addAttachment("payload", body);
     }
 }
