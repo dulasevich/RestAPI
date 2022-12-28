@@ -6,10 +6,11 @@ import by.issoft.dto.User;
 import by.issoft.dto.UserPairToUpdate;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.qameta.allure.Allure;
 import io.qameta.allure.Step;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicNameValuePair;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,9 +19,10 @@ import java.util.List;
 
 public class UserClient {
 
-    private final static String USER_ENDPOINT = "/users";
-    private final static String USER_UPLOAD_ENDPOINT = "/users/upload";
+    private static final String USER_ENDPOINT = "/users";
+    private static final String USER_UPLOAD_ENDPOINT = "/users/upload";
     private final ObjectMapper objectMapper;
+    private static final Logger logger = LoggerFactory.getLogger(UserClient.class);
 
     public UserClient() {
         this.objectMapper = new ObjectMapper();
@@ -28,6 +30,7 @@ public class UserClient {
 
     @Step("Get all users")
     public ResponseEntity<List<User>> getUsers() {
+        logger.info("Getting all users");
         List<User> users;
         ResponseEntity<List<User>> response = new ResponseEntity<>();
         HttpResponse httpResponse = Client.doGet(USER_ENDPOINT);
@@ -43,10 +46,10 @@ public class UserClient {
 
     @Step("Create user\n [{user}]")
     public int postUser(User user) {
+        logger.info("Creating new user: " + user);
         try {
             String body = objectMapper.writeValueAsString(user);
             HttpResponse httpResponse = Client.doPost(USER_ENDPOINT, body);
-            addPayload(body);
             return httpResponse.getStatusLine().getStatusCode();
         } catch (JsonProcessingException e) {
             throw new RuntimeException();
@@ -55,6 +58,7 @@ public class UserClient {
 
     @Step("Get users by parameter(s)")
     public ResponseEntity<List<User>> getUsers(List<BasicNameValuePair> params) {
+        logger.info("Getting " + params +  " user(s)");
         List<User> users;
         ResponseEntity<List<User>> response = new ResponseEntity<>();
         HttpResponse httpResponse = Client.doGet(USER_ENDPOINT, params);
@@ -70,10 +74,10 @@ public class UserClient {
 
     @Step("Update user")
     public int updateUser(UserPairToUpdate userPairToUpdate) {
+        logger.info("Updating user");
         try {
             String body = objectMapper.writeValueAsString(userPairToUpdate);
             HttpResponse httpResponse = Client.doPut(USER_ENDPOINT, body);
-            addPayload(body);
             return httpResponse.getStatusLine().getStatusCode();
         } catch (JsonProcessingException e) {
             throw new RuntimeException();
@@ -85,27 +89,25 @@ public class UserClient {
     }
 
     @Step("Create user for testing")
-    public User createAvailableUser (User user) {
+    public void createAvailableUser (User user) {
+        logger.info("Creating user for testing");
         int statusCode = 0;
         try {
             statusCode = Client.doPost(USER_ENDPOINT, objectMapper.writeValueAsString(user)).getStatusLine().getStatusCode();
         } catch (JsonProcessingException e) {
             e.printStackTrace();
         }
-        if(statusCode == 201) {
-            return user;
-        } else {
-            Client.logger.debug("Failed to create available user. Check POST /users method.");
-            throw new RuntimeException();
+        if(statusCode != 201) {
+            logger.error("Failed to create available user. Check POST /users method.");
         }
     }
 
     @Step("Delete user")
     public int deleteUser(User user) {
+        logger.info("Deleting user");
         try {
             String body = objectMapper.writeValueAsString(user);
             HttpResponse httpResponse = Client.doDelete(USER_ENDPOINT, body);
-            addPayload(body);
             return httpResponse.getStatusLine().getStatusCode();
         } catch (JsonProcessingException e) {
             throw new RuntimeException();
@@ -114,6 +116,7 @@ public class UserClient {
 
     @Step("Upload user")
     public HttpResponse uploadUser(File file, String fileName) {
+        logger.info("Uploading user(s)");
         return Client.doPost(USER_UPLOAD_ENDPOINT, file, fileName);
     }
 
@@ -121,12 +124,8 @@ public class UserClient {
         try {
             return (Arrays.stream(objectMapper.readValue(file, User[].class)).toList());
         } catch (IOException e) {
-            Client.logger.debug("unable to load users");
+            logger.error("unable to load users");
             throw new RuntimeException();
         }
-    }
-
-    public void addPayload(String body) {
-        Allure.addAttachment("payload", body);
     }
 }

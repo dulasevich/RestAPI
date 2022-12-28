@@ -2,7 +2,6 @@ package by.issoft.client;
 
 import by.issoft.httpClient.AccessType;
 import by.issoft.httpClient.Request;
-import lombok.extern.slf4j.Slf4j;
 import org.apache.http.HttpResponse;
 import org.apache.http.message.BasicNameValuePair;
 import org.slf4j.Logger;
@@ -13,9 +12,8 @@ import java.util.List;
 
 public class Client {
 
-    public final static String BASE_URL = "http://localhost:49000";
-
-    protected static Logger logger = LoggerFactory.getLogger(Slf4j.class);
+    public static final String BASE_URL = "http://localhost:49000";
+    private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
     public static HttpResponse doGet(String endpoint) {
         logger.info("Making get call to " + BASE_URL + endpoint);
@@ -32,7 +30,7 @@ public class Client {
     }
 
     public static HttpResponse doPost(String endpoint, String body) {
-        logger.info("Posting " + body + " to " + BASE_URL + endpoint);
+        logger.info("Posting  JSON body - " + body + " to " + BASE_URL + endpoint);
         return Request.post(BASE_URL + endpoint)
                 .addBearerTokenAuth(AuthClient.getToken(AccessType.WRITE))
                 .addHeader("Content-Type", "application/json")
