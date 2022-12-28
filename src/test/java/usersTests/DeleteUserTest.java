@@ -24,10 +24,11 @@ public class DeleteUserTest {
     void initUserClient() {
         userClient = new UserClient();
         zipCodeClient = new ZipCodeClient();
-        userToDelete = userClient.createAvailableUser(new User(RandomUtils.nextInt(0, 120),
+        userClient.createAvailableUser(new User(RandomUtils.nextInt(0, 120),
                 RandomStringUtils.randomAlphabetic(10),
                 Sex.FEMALE,
                 zipCodeClient.getZipCodes().getBody().get(0)));
+        userToDelete = userClient.getUsers().getBody().get(0);
     }
 
     @Test

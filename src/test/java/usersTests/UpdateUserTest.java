@@ -27,9 +27,10 @@ public class UpdateUserTest {
     void initUserClient() {
         userClient = new UserClient();
         zipCodeClient = new ZipCodeClient();
-        userToUpdate = userClient.createAvailableUser(new User(RandomUtils.nextInt(0, 120),
+        userClient.createAvailableUser(new User(RandomUtils.nextInt(0, 120),
                 RandomStringUtils.randomAlphabetic(10),
                 Sex.FEMALE, zipCodeClient.getZipCodes().getBody().get(0)));
+        userToUpdate = userClient.getUsers().getBody().get(0);
     }
 
     @Test
