@@ -12,7 +12,7 @@ import java.util.List;
 
 public class Client {
 
-    public static final String BASE_URL = "http://localhost:49000";
+    public static final String BASE_URL = "http://localhost:51000";
     private static final Logger logger = LoggerFactory.getLogger(Client.class);
 
     public static HttpResponse doGet(String endpoint) {

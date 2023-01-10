@@ -1,55 +1,86 @@
 package zipCodes;
 
-import by.issoft.ResponseEntity;
-import by.issoft.client.ZipCodeClient;
+import by.issoft.client.AuthClient;
+import by.issoft.httpClient.AccessType;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import org.apache.commons.lang3.RandomStringUtils;
 
+import static io.restassured.RestAssured.*;
+import static org.hamcrest.core.IsIterableContaining.hasItems;
+
 public class ZipCodeTest {
 
-    private final static int RESPONSE_CODE = 201;
-    private static final List<String> EXPECTED_CODES = List.of("ABCDE", "23456");
+    private static final String BASE_URL = "http://localhost:51000";
+    private final static int GET_RESPONSE_CODE = 200;
+    private final static int POST_RESPONSE_CODE = 201;
+    private static final List<String> EXPECTED_CODES = List.of("43247", "95465");
     private String newZipCode;
-    private ZipCodeClient zipCodeClient;
 
     @BeforeEach
     public void initZipCodeClient() {
-        zipCodeClient = new ZipCodeClient();
-        newZipCode = RandomStringUtils.randomNumeric(5);
+        newZipCode =  RandomStringUtils.randomNumeric(5);
     }
 
     @Test
     void getZipCodesTest() {
-        ResponseEntity<List<String>> response =  zipCodeClient.getZipCodes();
-        Assertions.assertEquals(RESPONSE_CODE, response.getStatusCode());
-        Assertions.assertTrue(response.getBody().containsAll(EXPECTED_CODES));
+        Response response = given().header(
+                        "Authorization", "Bearer " + AuthClient.getToken(AccessType.READ))
+                .when()
+                .get(BASE_URL + "/zip-codes");
+        response.then().statusCode(GET_RESPONSE_CODE);
+        //response.then().body("", hasItems(EXPECTED_CODES));
+        List<String> zipCodes = Arrays.asList(response.getBody().as(String[].class));
+        Assertions.assertTrue(zipCodes.containsAll(EXPECTED_CODES));
     }
 
     @Test
     void postZipCodeTest() {
-        ResponseEntity<List<String>> response = zipCodeClient.postZipCodes(newZipCode);
-        Assertions.assertEquals(RESPONSE_CODE, response.getStatusCode());
-        Assertions.assertTrue(response.getBody().contains(newZipCode));
+        given()
+                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.WRITE))
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("[" + newZipCode + "]")
+                .when()
+                .post(BASE_URL + "/zip-codes/expand")
+                .then()
+                .statusCode(POST_RESPONSE_CODE)
+                .body("", hasItems(newZipCode));
     }
 
     @Test
     void postDuplicatedZipCodesTest() {
-        ResponseEntity<List<String>> response = zipCodeClient.postZipCodes(newZipCode, newZipCode);
-        Assertions.assertEquals(RESPONSE_CODE, response.getStatusCode());
-        Assertions.assertTrue(response.getBody().contains(newZipCode));
-        Assertions.assertEquals(1, Collections.frequency(response.getBody(), newZipCode));
+        Response response = given()
+                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.WRITE))
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body("[" + newZipCode + "," + newZipCode + "]")
+                .when()
+                .post(BASE_URL + "/zip-codes/expand");
+        response.then().statusCode(POST_RESPONSE_CODE);
+        List<String> zipCodes = Arrays.asList(response.getBody().as(String[].class));
+        Assertions.assertEquals(1, Collections.frequency(zipCodes, newZipCode));
     }
 
     @Test
     void postExistingZipCodeTest() {
-        ResponseEntity<List<String>> response = zipCodeClient.postZipCodes(EXPECTED_CODES.toArray(String[]::new));
-        Assertions.assertEquals(RESPONSE_CODE, response.getStatusCode());
-        Assertions.assertEquals(1, Collections.frequency(response.getBody(), EXPECTED_CODES.get(0)));
-        Assertions.assertEquals(1, Collections.frequency(response.getBody(), EXPECTED_CODES.get(1)));
+        Response response = given()
+                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.WRITE))
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body(EXPECTED_CODES)
+                .when()
+                .post(BASE_URL + "/zip-codes/expand");
+        response.then().statusCode(POST_RESPONSE_CODE);
+        List<String> zipCodes = Arrays.asList(response.getBody().as(String[].class));
+        Assertions.assertEquals(1, Collections.frequency(zipCodes, EXPECTED_CODES.get(0)));
+        Assertions.assertEquals(1, Collections.frequency(zipCodes, EXPECTED_CODES.get(1)));
     }
 }
