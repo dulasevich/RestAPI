@@ -53,10 +53,10 @@ public class UploadUserTest {
         List<User> usersAfterUpload = List.of(userClient.getUsers().as(User[].class));
         Assertions.assertFalse(usersAfterUpload.containsAll(fileUsers));
     }
-//
-//    @AfterAll
-//    void deleteUsersAfterUpload() {
-//        List<User> users = userClient.getUsers().getBody();
-//        users.forEach(user -> userClient.deleteUser(user));
-//    }
+
+    @AfterAll
+    void deleteUsersAfterUpload() {
+        List<User> users = List.of(userClient.getUsers().as(User[].class));
+        users.forEach(user -> userClient.deleteUser(user));
+    }
 }
