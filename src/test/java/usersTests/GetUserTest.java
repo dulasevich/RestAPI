@@ -1,72 +1,53 @@
 package usersTests;
 
-import by.issoft.client.AuthClient;
+import by.issoft.client.UserClient;
 import by.issoft.dto.Sex;
 import by.issoft.dto.User;
-import by.issoft.httpClient.AccessType;
 import io.restassured.response.Response;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.util.Arrays;
 import java.util.List;
-
-import static io.restassured.RestAssured.given;
-
 public class GetUserTest {
-
-    private static final String BASE_URL = "http://localhost:51000";
     private static final int RESPONSE_CODE = 200;
+    private UserClient userClient;
+
+    @BeforeEach
+    public void initUserClient() {
+        userClient = new UserClient();
+    }
 
     @Test
     void getUserTest() {
-        Response response = given()
-                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.READ))
-                .when()
-                .get(BASE_URL + "/users");
+        Response response = userClient.getUsers();
         response.then().statusCode(RESPONSE_CODE);
-        List<User> users = Arrays.stream(response.getBody().as(User[].class)).toList();
+        List<User> users = List.of(response.getBody().as(User[].class));
         Assertions.assertNotNull(users);
     }
 
     @Test
     void getOlderUsersTest() {
         int ageToCheck = 90;
-        Response response = given()
-                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.READ))
-                .param("olderThan", ageToCheck)
-                .when()
-                .get(BASE_URL + "/users");
+        Response response = userClient.getUsers("olderThan", String.valueOf(ageToCheck));
         response.then().statusCode(RESPONSE_CODE);
-        List<User> users = Arrays.stream(response.getBody().as(User[].class)).toList();
+        List<User> users = List.of(response.getBody().as(User[].class));
         users.forEach(user -> Assertions.assertTrue(user.getAge() > ageToCheck));
     }
 
     @Test
     void getYoungerUsersTest() {
         int ageToCheck = 20;
-        Response response = given()
-                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.READ))
-                .param("youngerThan", ageToCheck)
-                .when()
-                .get(BASE_URL + "/users");
-//                .then()
-//                .statusCode(RESPONSE_CODE)
-//                .body("age", Arrays.toString(ageToCheck));
+        Response response = userClient.getUsers("youngerThan", String.valueOf(ageToCheck));
         response.then().statusCode(RESPONSE_CODE);
-        List<User> users = Arrays.stream(response.getBody().as(User[].class)).toList();
+        List<User> users = List.of(response.getBody().as(User[].class));
         users.forEach(user -> Assertions.assertTrue(user.getAge() < ageToCheck));
     }
 
     @Test
     void getUserBySexTest() {
-        Response response = given()
-                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.READ))
-                .param("sex", Sex.FEMALE.toString())
-                .when()
-                .get(BASE_URL + "/users");
+        Response response = userClient.getUsers("sex", Sex.FEMALE.toString());
         response.then().statusCode(RESPONSE_CODE);
-        List<User> users = Arrays.stream(response.getBody().as(User[].class)).toList();
+        List<User> users = List.of(response.getBody().as(User[].class));
         users.forEach(user -> Assertions.assertNotEquals(user.getSex(), Sex.MALE));
     }
 }

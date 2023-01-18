@@ -25,11 +25,10 @@ public class UploadUserTest {
     @Test
     @Order(1)
     void successUploadUserTest() {
+        userClient.uploadUser(new File("src/test/resources/filesToUpload/successUsers.json"))
+                .then().statusCode(SUCCESS_RESPONSE_CODE);
         List<User> fileUsers = userClient.getUsersFromFile(new File("src/test/resources/filesToUpload/successUsers.json"));
-        int statusCode = userClient.uploadUser(new File("src/test/resources/filesToUpload/successUsers.json"),
-                "successUsers").getStatusLine().getStatusCode();
-        List<User> usersAfterUpload = userClient.getUsers().getBody();
-        Assertions.assertEquals(SUCCESS_RESPONSE_CODE, statusCode);
+        List<User> usersAfterUpload = List.of(userClient.getUsers().as(User[].class));
         Assertions.assertTrue(usersAfterUpload.containsAll(fileUsers));
     }
 
@@ -38,11 +37,10 @@ public class UploadUserTest {
     void incorrectZipUploadUserTest() {
         List<User> fileUsers = userClient
                 .getUsersFromFile(new File("src/test/resources/filesToUpload/incorrectZip.json"));
-        int statusCode = userClient.uploadUser(new File("src/test/resources/filesToUpload/incorrectZip.json"),
-                "incorrectZip").getStatusLine().getStatusCode();
-        List<User> usersAfterUpload = userClient.getUsers().getBody();
+        userClient.uploadUser(new File("src/test/resources/filesToUpload/incorrectZip.json"))
+                .then().statusCode(NO_SUCH_ZIPCODE_RESPONSE_CODE);
+        List<User> usersAfterUpload = List.of(userClient.getUsers().as(User[].class));
         Assertions.assertFalse(usersAfterUpload.containsAll(fileUsers));
-        Assertions.assertEquals(NO_SUCH_ZIPCODE_RESPONSE_CODE, statusCode);
     }
 
     @Test
@@ -50,16 +48,15 @@ public class UploadUserTest {
     void noRequiredFieldUploadUserTest() {
         List<User> fileUsers = userClient
                 .getUsersFromFile(new File("src/test/resources/filesToUpload/noRequiredField.json"));
-        int statusCode = userClient.uploadUser(new File("src/test/resources/filesToUpload/noRequiredField.json"),
-                "noRequiredField").getStatusLine().getStatusCode();
-        List<User> usersAfterUpload = userClient.getUsers().getBody();
+        userClient.uploadUser(new File("src/test/resources/filesToUpload/noRequiredField.json"))
+                .then().statusCode(REQUIRED_FIELD_MISSED_RESPONSE_CODE);
+        List<User> usersAfterUpload = List.of(userClient.getUsers().as(User[].class));
         Assertions.assertFalse(usersAfterUpload.containsAll(fileUsers));
-        Assertions.assertEquals(REQUIRED_FIELD_MISSED_RESPONSE_CODE, statusCode);
     }
-
-    @AfterAll
-    void deleteUsersAfterUpload() {
-        List<User> users = userClient.getUsers().getBody();
-        users.forEach(user -> userClient.deleteUser(user));
-    }
+//
+//    @AfterAll
+//    void deleteUsersAfterUpload() {
+//        List<User> users = userClient.getUsers().getBody();
+//        users.forEach(user -> userClient.deleteUser(user));
+//    }
 }

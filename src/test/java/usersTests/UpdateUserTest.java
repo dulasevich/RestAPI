@@ -12,9 +12,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
-
 public class UpdateUserTest {
-
     private final static int SUCCESS_RESPONSE_CODE = 200;
     private final static int NO_SUCH_ZIPCODE_RESPONSE_CODE = 424;
     private final static int REQUIRED_FIELD_MISSED_RESPONSE_CODE = 409;
@@ -29,17 +27,16 @@ public class UpdateUserTest {
         zipCodeClient = new ZipCodeClient();
         userClient.createAvailableUser(new User(RandomUtils.nextInt(0, 120),
                 RandomStringUtils.randomAlphabetic(10),
-                Sex.FEMALE, zipCodeClient.getZipCodes().getBody().get(0)));
-        userToUpdate = userClient.getUsers().getBody().get(0);
+                Sex.FEMALE, List.of(zipCodeClient.getZipCodes().as(String[].class)).get(0)));
+        userToUpdate = List.of(userClient.getUsers().as(User[].class)).get(0);
     }
 
     @Test
     void successUpdateUserTest() {
         User newUser = new User(RandomUtils.nextInt(0, 120), userToUpdate.getName(),
                 userClient.setOppositeSex(userToUpdate.getSex()), userToUpdate.getZipCode());
-        int statusCode = userClient.updateUser(new UserPairToUpdate(newUser, userToUpdate));
-        List<User> users = userClient.getUsers().getBody();
-        Assertions.assertEquals(SUCCESS_RESPONSE_CODE, statusCode);
+        userClient.updateUser(new UserPairToUpdate(newUser, userToUpdate)).then().statusCode(SUCCESS_RESPONSE_CODE);
+        List<User> users = List.of(userClient.getUsers().as(User[].class));
         Assertions.assertFalse(users.contains(userToUpdate));
         Assertions.assertTrue(users.contains(newUser));
     }
@@ -48,9 +45,8 @@ public class UpdateUserTest {
     void incorrectZipcodeUpdateUserTest() {
         User newUser = new User(userToUpdate.getAge(), userToUpdate.getName(),
                 userToUpdate.getSex(), String.valueOf(RandomUtils.nextInt(0, 100)));
-        int statusCode = userClient.updateUser(new UserPairToUpdate(newUser, userToUpdate));
-        List<User> users = userClient.getUsers().getBody();
-        Assertions.assertEquals(NO_SUCH_ZIPCODE_RESPONSE_CODE, statusCode);
+        userClient.updateUser(new UserPairToUpdate(newUser, userToUpdate)).then().statusCode(NO_SUCH_ZIPCODE_RESPONSE_CODE);
+        List<User> users = List.of(userClient.getUsers().as(User[].class));
         Assertions.assertFalse(users.contains(newUser));
     }
 
@@ -58,9 +54,8 @@ public class UpdateUserTest {
     void noRequiredFieldsUpdateUserTest() {
         User newUser = new User(userToUpdate.getAge(), null,
                 null, userToUpdate.getZipCode());
-        int statusCode = userClient.updateUser(new UserPairToUpdate(newUser, userToUpdate));
-        List<User> users = userClient.getUsers().getBody();
-        Assertions.assertEquals(REQUIRED_FIELD_MISSED_RESPONSE_CODE, statusCode);
+        userClient.updateUser(new UserPairToUpdate(newUser, userToUpdate)).then().statusCode(REQUIRED_FIELD_MISSED_RESPONSE_CODE);
+        List<User> users = List.of(userClient.getUsers().as(User[].class));
         Assertions.assertFalse(users.contains(newUser));
     }
 }
