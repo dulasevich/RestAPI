@@ -1,21 +1,22 @@
 package by.issoft.client;
 
-import by.issoft.ResponseEntity;
 import by.issoft.dto.Sex;
 import by.issoft.dto.User;
 import by.issoft.dto.UserPairToUpdate;
-import com.fasterxml.jackson.core.JsonProcessingException;
+import by.issoft.httpClient.AccessType;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.qameta.allure.Step;
-import org.apache.http.HttpResponse;
-import org.apache.http.message.BasicNameValuePair;
+import io.restassured.http.ContentType;
+import io.restassured.response.Response;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.List;
+
+import static by.issoft.client.AuthClient.BASE_URL;
+import static io.restassured.RestAssured.given;
 
 public class UserClient {
 
@@ -29,59 +30,47 @@ public class UserClient {
     }
 
     @Step("Get all users")
-    public ResponseEntity<List<User>> getUsers() {
+    public Response getUsers() {
         logger.info("Getting all users");
-        List<User> users;
-        ResponseEntity<List<User>> response = new ResponseEntity<>();
-        HttpResponse httpResponse = Client.doGet(USER_ENDPOINT);
-        response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
-        try {
-            users = Arrays.stream(objectMapper.readValue(httpResponse.getEntity().getContent(), User[].class)).toList();
-            response.setBody(users);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return response;
+        return given()
+                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.READ))
+                .when()
+                .get(BASE_URL + USER_ENDPOINT);
     }
 
     @Step("Create user\n [{user}]")
-    public int postUser(User user) {
+    public Response postUser(User user) {
         logger.info("Creating new user: " + user);
-        try {
-            String body = objectMapper.writeValueAsString(user);
-            HttpResponse httpResponse = Client.doPost(USER_ENDPOINT, body);
-            return httpResponse.getStatusLine().getStatusCode();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException();
-        }
+        return given()
+                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.WRITE))
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body(user)
+                .when()
+                .post(BASE_URL + USER_ENDPOINT);
     }
 
     @Step("Get users by parameter(s)")
-    public ResponseEntity<List<User>> getUsers(List<BasicNameValuePair> params) {
-        logger.info("Getting " + params +  " user(s)");
-        List<User> users;
-        ResponseEntity<List<User>> response = new ResponseEntity<>();
-        HttpResponse httpResponse = Client.doGet(USER_ENDPOINT, params);
-        response.setStatusCode(httpResponse.getStatusLine().getStatusCode());
-        try {
-            users = Arrays.stream(objectMapper.readValue(httpResponse.getEntity().getContent(), User[].class)).toList();
-            response.setBody(users);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-        return response;
+    public Response getUsers(String parameter, String value) {
+        logger.info("Getting " + parameter + " " + value +  " user(s)");
+        return given()
+                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.READ))
+                .param(parameter, value)
+                .when()
+                .get(BASE_URL + USER_ENDPOINT);
+
     }
 
     @Step("Update user")
-    public int updateUser(UserPairToUpdate userPairToUpdate) {
+    public Response updateUser(UserPairToUpdate userPairToUpdate) {
         logger.info("Updating user");
-        try {
-            String body = objectMapper.writeValueAsString(userPairToUpdate);
-            HttpResponse httpResponse = Client.doPut(USER_ENDPOINT, body);
-            return httpResponse.getStatusLine().getStatusCode();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException();
-        }
+        return given()
+                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.WRITE))
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body(userPairToUpdate)
+                .when()
+                .patch(BASE_URL + USER_ENDPOINT);
     }
 
     public Sex setOppositeSex(Sex sex) {
@@ -91,38 +80,45 @@ public class UserClient {
     @Step("Create user for testing")
     public void createAvailableUser (User user) {
         logger.info("Creating user for testing");
-        int statusCode = 0;
-        try {
-            statusCode = Client.doPost(USER_ENDPOINT, objectMapper.writeValueAsString(user)).getStatusLine().getStatusCode();
-        } catch (JsonProcessingException e) {
-            e.printStackTrace();
-        }
-        if(statusCode != 201) {
+        Response response = given()
+                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.WRITE))
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body(user)
+                .when()
+                .post(BASE_URL + USER_ENDPOINT);
+        if(response.statusCode() != 201) {
             logger.error("Failed to create available user. Check POST /users method.");
         }
     }
 
     @Step("Delete user")
-    public int deleteUser(User user) {
+    public Response deleteUser(User user) {
         logger.info("Deleting user");
-        try {
-            String body = objectMapper.writeValueAsString(user);
-            HttpResponse httpResponse = Client.doDelete(USER_ENDPOINT, body);
-            return httpResponse.getStatusLine().getStatusCode();
-        } catch (JsonProcessingException e) {
-            throw new RuntimeException();
-        }
+        return given()
+                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.WRITE))
+                .contentType(ContentType.JSON)
+                .accept(ContentType.JSON)
+                .body(user)
+                .when()
+                .delete(BASE_URL + USER_ENDPOINT);
     }
 
     @Step("Upload user")
-    public HttpResponse uploadUser(File file, String fileName) {
+    public Response uploadUser(File file) {
         logger.info("Uploading user(s)");
-        return Client.doPost(USER_UPLOAD_ENDPOINT, file, fileName);
+        return given()
+                .header("Authorization", "Bearer " + AuthClient.getToken(AccessType.WRITE))
+                .contentType(ContentType.MULTIPART)
+                .accept(ContentType.JSON)
+                .multiPart(file)
+                .when()
+                .post(BASE_URL + USER_UPLOAD_ENDPOINT);
     }
 
     public List<User> getUsersFromFile(File file) {
         try {
-            return (Arrays.stream(objectMapper.readValue(file, User[].class)).toList());
+            return List.of(objectMapper.readValue(file, User[].class));
         } catch (IOException e) {
             logger.error("unable to load users");
             throw new RuntimeException();

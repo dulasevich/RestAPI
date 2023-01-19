@@ -1,17 +1,12 @@
 package by.issoft.client;
 
 import by.issoft.httpClient.AccessType;
-import by.issoft.httpClient.Request;
-import com.fasterxml.jackson.databind.ObjectMapper;
 import by.issoft.dto.Auth;
-import org.apache.http.HttpResponse;
 
-import java.io.IOException;
-
-import static by.issoft.client.Client.BASE_URL;
+import static io.restassured.RestAssured.given;
 
 public class AuthClient {
-
+    public static final String BASE_URL = "http://localhost:50000";
     private final static String writeToken;
     private final static String readToken;
     private final static String LOGIN = "0oa157tvtugfFXEhU4x7";
@@ -24,17 +19,15 @@ public class AuthClient {
     }
 
     private static String setToken(AccessType access) {
-        ObjectMapper objectMapper = new ObjectMapper();
-        HttpResponse response = Request.post(BASE_URL + TOKEN_ENDPOINT)
-                .addParameter("grant_type", "client_credentials")
-                .addParameter("scope", access.name().toLowerCase())
-                .addBasicAuth(LOGIN, PASSWORD)
-                .send();
-        try {
-            return objectMapper.readValue(response.getEntity().getContent(), Auth.class).getAccessToken();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
+        return given()
+                .param("grant_type", "client_credentials")
+                .param("scope", access.name().toLowerCase())
+                .auth()
+                .basic(LOGIN, PASSWORD)
+                .when()
+                .post(BASE_URL + TOKEN_ENDPOINT)
+                .as(Auth.class)
+                .getAccessToken();
     }
 
     public static String getToken(AccessType access) {

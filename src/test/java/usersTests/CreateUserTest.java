@@ -7,17 +7,14 @@ import by.issoft.dto.User;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.RandomUtils;
 import org.junit.jupiter.api.*;
-
 import java.util.List;
-
 public class CreateUserTest {
-
     private final static int POST_RESPONSE_CODE = 201;
+    private UserClient userClient;
+    private ZipCodeClient zipCodeClient;
     private Integer age;
     private String name;
     private String zipCode;
-    private UserClient userClient;
-    private ZipCodeClient zipCodeClient;
 
     @BeforeEach
     void initUser() {
@@ -31,10 +28,10 @@ public class CreateUserTest {
     @Test
     void postUserAllFieldsTest() {
         User user = new User(age, name, Sex.FEMALE, zipCode);
-        int response = userClient.postUser(user);
-        List<User> users = userClient.getUsers().getBody();
-        List<String> zipCodes = zipCodeClient.getZipCodes().getBody();
-        Assertions.assertEquals(POST_RESPONSE_CODE, response);
+        userClient.postUser(user).then().statusCode(POST_RESPONSE_CODE);
+        List<User> users = List.of(userClient.getUsers().as(User[].class));
+        List<String> zipCodes = List.of(zipCodeClient.getZipCodes().as(String[].class));
+
         Assertions.assertTrue(users.contains(user));
         Assertions.assertFalse(zipCodes.contains(zipCode));
     }
@@ -42,9 +39,8 @@ public class CreateUserTest {
     @Test
     void postUserRequiredFieldsTest() {
         User user = new User(null, name, Sex.MALE, null);
-        int response = userClient.postUser(user);
-        List<User> users = userClient.getUsers().getBody();
-        Assertions.assertEquals(POST_RESPONSE_CODE, response);
+        userClient.postUser(user).then().statusCode(POST_RESPONSE_CODE);
+        List <User> users = List.of(userClient.getUsers().as(User[].class));
         Assertions.assertTrue(users.contains(user));
     }
 
@@ -52,15 +48,13 @@ public class CreateUserTest {
     void postIncorrectZipCodeUser () {
         zipCode = RandomStringUtils.randomNumeric(10);
         User user = new User(age, name, Sex.FEMALE, zipCode);
-        int response = userClient.postUser(user);
-        Assertions.assertEquals(424, response);
+        userClient.postUser(user).then().statusCode(424);
     }
 
     @Test()
     void postExistingUserTest() {
-        List<User> users = userClient.getUsers().getBody();
+        List<User> users = List.of(userClient.getUsers().as(User[].class));
         User user = new User(age, users.get(0).getName(), users.get(0).getSex(), zipCode);
-        int response = userClient.postUser(user);
-        Assertions.assertEquals(400, response);
+        userClient.postUser(user).then().statusCode(400);
     }
 }

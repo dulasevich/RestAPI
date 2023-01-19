@@ -3,12 +3,12 @@
     "name": "Dmitry",
     "age": 31,
     "sex": "MALE",
-    "zipCode": null
+    "zipCode": "48178"
   },
   {
     "name": "Tanya",
     "age": 29,
     "sex": "FEMALE",
-    "zipCode": "81860"
+    "zipCode": "38376"
   }
 ]
